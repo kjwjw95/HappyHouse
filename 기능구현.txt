@@ -1,0 +1,98 @@
+HappyHouse_Java_광주3반_김부희_김정욱
+
+* 기본 기능 구현
+#01 
+searchBt.addActionListener(e ->{
+         searchHouses();
+});
+
+#02
+@Override
+public HouseDeal search(int no) {
+	return dao.search(no);
+}
+
+#03
+public HouseDeal search(int no) {
+	for(HouseDeal house : search) {
+		if(house.getNo()==no) {
+			if(environ.get(house.getDong())!=null) {
+				int[] temp = environ.get(house.getDong());
+				house.setPoison(temp[2]);
+				house.setAir(temp[1]);
+				house.setWater(temp[0]);
+			}
+			System.out.println(house.getAptName());
+			if(houseInfo.get(house.getDong()+house.getAptName())!=null) {
+				house.setImg(houseInfo.get(house.getDong()+house.getAptName()).getImg());
+			}else
+				house.setImg(null);
+			return house;
+		}
+	}
+     	return null;
+}
+
+#04 ~ #07  (APTRentSAXHandler)
+
+#08 ( HouseDealSAXHandler)
+
+
+* 추가 기능 
+: 선택한 아파트나 주택의 주소지(동)에 있는 폐수, 대기 등 관리업체 개수를 출력(ReadCSVTest class)
+public Map<String, int[]> ReadCSV() throws FileNotFoundException, IOException {
+	//List<List<String>> envAreaList = new ArrayList<>();
+	int[] cnt = new int[3];
+	Map<String, int[]> map = new HashMap<String, int[]>();
+	String csvFileName = "res/서울시 종로구 환경 지도점검 내역 현황.csv";
+		
+	try (BufferedReader br = new BufferedReader(new FileReader(csvFileName))) {
+		String line;
+		while ((line = br.readLine()) != null) {
+			String[] values = line.split(",");
+			String[] dongs = values[12].split(" ");
+			String key;
+			if (dongs.length >= 3)
+				key = dongs[2];
+			else
+				continue;
+			
+			int[] temps;
+			if (map.get(key) != null)
+				temps = map.get(key);
+			else
+				temps = new int[3];
+			
+			
+			if (values[3].contains("폐수") || values[3].contains("수질")) {
+				temps[0]++;
+				map.put(key, temps);
+			} else if (values[3].contains("대기")) {
+				temps[1]++;
+				map.put(key, temps);
+			} else if (values[3].contains("유독물")) {
+				temps[2]++;
+				map.put(key, temps);
+			}
+			//envAreaList.add(Arrays.asList(values));
+		}
+	}
+	return map;
+} 
+*심화 기능
+:선택한 동의 상권 정보를 대분류,중분류,소분류,업체명 순서로 출력
+public List<CS> ReadCSV2() throws FileNotFoundException, IOException {
+      List<CS> list = new ArrayList<>();
+      String csvFileName = "res/종로구_상권.csv";
+      
+      try (BufferedReader br = new BufferedReader(new FileReader(csvFileName))) {
+         String line;
+         while ((line = br.readLine()) != null) {
+            String[] values = line.split(",");
+            //int num = Integer.parseInt(values[0]);
+            list.add(new CS(values[0],values[1],values[4],values[6],values[8],values[18]));
+            
+         }
+      }
+      return list;
+   }
